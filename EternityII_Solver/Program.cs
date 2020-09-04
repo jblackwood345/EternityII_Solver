@@ -312,14 +312,14 @@ namespace EternityII_Solver
             heuristic_array = new int[256];
             for (int i = 0; i < 256; i++)
             {
-                if (i <= 10)
+                if (i <= 18)
                     heuristic_array[i] = 0;
                 else if (i <= 26)
-                    heuristic_array[i] = (int)(((float)i - 12) * (float)2.2857);
+                    heuristic_array[i] = (int)(((float)i - 18) * (float)3.375);
                 else if (i <= 56)
-                    heuristic_array[i] = (int)((((float)i - 26) * (float)1.3333) + 32);
+                    heuristic_array[i] = (int)((((float)i - 26) * (float)1.43333) + 27);
                 else if (i <= 96)
-                    heuristic_array[i] = (int)(((((float)i - 56) * (float)0.65)) + 72);
+                    heuristic_array[i] = (int)(((((float)i - 56) * (float)0.70)) + 70);
                 else if (i <= max_heuristic_index)
                     heuristic_array[i] = (int)(((((float)i - 96) / 2.9473)) + 98);
             }
