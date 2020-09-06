@@ -11,8 +11,8 @@ namespace EternityII_Solver
     {
         public static readonly List<int> side_edges = new List<int>() { 1, 5, 9, 13, 17 };
         public static readonly List<int> middle_edges = new List<int>() { 2, 3, 4, 6, 7, 8, 10, 11, 12, 14, 15, 16, 18, 19, 20, 21, 22 };
-        public static List<int> heuristic_sides = new List<int>() { 6, 18, 1 };
-        private static List<int> break_indexes_allowed = new List<int>() { 201, 203, 211, 216, 221, 225, 229, 233, 236, 238, 240 };
+        public static List<int> heuristic_sides = new List<int>() { 17, 2, 18 }; // There is a lot of overlap between these sides
+        private static List<int> break_indexes_allowed = new List<int>() { 201, 206, 211, 216, 221, 225, 229, 233, 237, 239, 241 };
 
         public static ushort Calculate_Two_Sides(ushort side1, ushort side2)
         {
@@ -334,8 +334,8 @@ namespace EternityII_Solver
                 new Piece() { PieceNumber = 4, TopSide = 17, RightSide = 9, BottomSide = 0, LeftSide = 0 },
 
                 new Piece() { PieceNumber = 8, TopSide = 6, RightSide = 13, BottomSide = 0, LeftSide = 1 },
-               
-                new Piece() { PieceNumber = 139, TopSide = 6, RightSide = 11, BottomSide = 18, LeftSide = 6 },
+
+                new Piece() { PieceNumber = 139, TopSide = 6, RightSide = 11, BottomSide = 18, LeftSide = 6 }
             };
 
             if (pieces.Count() != 256)

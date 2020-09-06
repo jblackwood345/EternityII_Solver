@@ -31,14 +31,14 @@ namespace EternityII_Solver
 
                         long[] solve_indexes = SolvePuzzle();
 
-                        for (int j = 0; j < 256; j++)
+                        for (int j = 0; j < 257; j++)
                             index_counts.AddOrUpdate(j, solve_indexes[j], (id, count) => count + solve_indexes[j]);
 
                         stopwatch.Stop();
                     }
                 });
 
-                for (int i = 0; i < 256; i++)
+                for (int i = 0; i < 257; i++)
                 {
                     Console.WriteLine("{0} {1}", i, index_counts[i]); // This will only print valid numbers if you let the solver count how far you are.
                 }
@@ -51,7 +51,7 @@ namespace EternityII_Solver
             byte* cumulative_heuristic_side_count = stackalloc byte[256];
             byte* piece_index_to_try_next = stackalloc byte[256];
             byte* cumulative_breaks = stackalloc byte[256];
-            long[] solve_index_counts = new long[256];
+            long[] solve_index_counts = new long[257];
             RotatedPiece* board = stackalloc RotatedPiece[256];
 
             Random rand = new Random();
@@ -60,7 +60,7 @@ namespace EternityII_Solver
             foreach (var m in bottom_side_pieces_rotated)
                 bottom_sides[m.Key] = m.Value.OrderByDescending(x => (x.RotatedPiece.Heuristic_Side_Count > 0 ? 100 : 0) + rand.Next(0, 99)).Select(x => x.RotatedPiece).ToArray();
 
-            board[0] = corners[0].ToList().Where(x => x.PieceNumber == rand.Next(1, 2)).First(); // Get rid of pieces 1 or 2 first
+            board[0] = corners[0].ToList().OrderBy(x => rand.Next(1, 1000)).First(); // Get rid of pieces 1 or 2 first
             piece_used[board[0].PieceNumber] = true;
             cumulative_breaks[0] = 0;
             cumulative_heuristic_side_count[0] = board[0].Heuristic_Side_Count;
@@ -93,7 +93,7 @@ namespace EternityII_Solver
                     }
                 }
 
-                if (node_count > 40000000000)
+                if (node_count > 50000000000)
                 {
                     return solve_index_counts;
                 }
@@ -116,8 +116,6 @@ namespace EternityII_Solver
                     else
                     {
                         piece_candidates = corners[board[row * 16 + (col - 1)].RightSide * 23 + 0];
-                        if (piece_candidates != null)
-                            piece_candidates = piece_candidates.ToList().Where(x => x.PieceNumber == 1 || x.PieceNumber == 2).ToArray(); // force piece number 1 or 2 in bottom right corner
                     }
                 }
                 else
@@ -312,16 +310,16 @@ namespace EternityII_Solver
             heuristic_array = new int[256];
             for (int i = 0; i < 256; i++)
             {
-                if (i <= 18)
+                if (i <= 16)
                     heuristic_array[i] = 0;
                 else if (i <= 26)
-                    heuristic_array[i] = (int)(((float)i - 18) * (float)3.375);
+                    heuristic_array[i] = (int)(((float)i - 16) * (float)3.1);
                 else if (i <= 56)
-                    heuristic_array[i] = (int)((((float)i - 26) * (float)1.43333) + 27);
+                    heuristic_array[i] = (int)((((float)i - 26) * (float)1.43333) + 31);
                 else if (i <= 96)
-                    heuristic_array[i] = (int)(((((float)i - 56) * (float)0.70)) + 70);
+                    heuristic_array[i] = (int)(((((float)i - 56) * (float)0.65)) + 74);
                 else if (i <= max_heuristic_index)
-                    heuristic_array[i] = (int)(((((float)i - 96) / 2.9473)) + 98);
+                    heuristic_array[i] = (int)(((((float)i - 96) / 3.75)) + 100);
             }
         }
 
@@ -341,6 +339,6 @@ namespace EternityII_Solver
         static SearchIndex[] board_search_sequence;
         static byte[] break_array;
         static int[] heuristic_array;
-        const int max_heuristic_index = 152;
+        const int max_heuristic_index = 156;
     }
 }
