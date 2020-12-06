@@ -313,13 +313,15 @@ namespace EternityII_Solver
                 if (i <= 16)
                     heuristic_array[i] = 0;
                 else if (i <= 26)
-                    heuristic_array[i] = (int)(((float)i - 16) * (float)3.1);
+                    heuristic_array[i] = (int)(((float)i - 16) * (float)2.8);
                 else if (i <= 56)
-                    heuristic_array[i] = (int)((((float)i - 26) * (float)1.43333) + 31);
-                else if (i <= 96)
-                    heuristic_array[i] = (int)(((((float)i - 56) * (float)0.65)) + 74);
+                    heuristic_array[i] = (int)((((float)i - 26) * (float)1.43333) + 28);
+                else if (i <= 76)
+                    heuristic_array[i] = (int)(((((float)i - 56) * (float)0.9)) + 71);
+                else if (i <= 102)
+                    heuristic_array[i] = (int)(((((float)i - 76) * (float)0.6538)) + 89);
                 else if (i <= max_heuristic_index)
-                    heuristic_array[i] = (int)(((((float)i - 96) / 3.75)) + 100);
+                    heuristic_array[i] = (int)(((((float)i - 102) / 4.4615)) + 106);
             }
         }
 
@@ -339,6 +341,6 @@ namespace EternityII_Solver
         static SearchIndex[] board_search_sequence;
         static byte[] break_array;
         static int[] heuristic_array;
-        const int max_heuristic_index = 156;
+        const int max_heuristic_index = 160;
     }
 }
