@@ -172,9 +172,9 @@ namespace EternityII_Solver
         static void Prepare_Pieces_And_Heuristics()
         {
             var board_pieces = Util.Get_Pieces();
-            var corner_pieces = board_pieces.Where(x => x.PieceType() == 2).ToList();
-            var side_pieces = board_pieces.Where(x => x.PieceType() == 1).ToList();
-            var middle_pieces = board_pieces.Where(x => x.PieceType() == 0).Where(x => x.PieceNumber != 139).ToList(); // exclude start piece
+            var corner_pieces = board_pieces.Where(x => x.PieceType == 2).ToList();
+            var side_pieces = board_pieces.Where(x => x.PieceType == 1).ToList();
+            var middle_pieces = board_pieces.Where(x => x.PieceType == 0).Where(x => x.PieceNumber != 139).ToList(); // exclude start piece
             var start_piece = board_pieces.Where(x => x.PieceNumber == 139).ToList();
 
             // corners

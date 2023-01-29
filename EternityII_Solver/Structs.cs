@@ -8,15 +8,7 @@ namespace EternityII_Solver
         public byte RightSide { get; set; }
         public byte BottomSide { get; set; }
         public byte LeftSide { get; set; }
-        public byte PieceType() // 2 for corners, 1 for sides, and 0 for middles
-        {
-            if (PieceNumber >= 1 && PieceNumber <= 4)
-                return 2;
-            else if (PieceNumber >= 5 && PieceNumber <= 60)
-                return 1;
-
-            return 0;
-        }
+        public byte PieceType { get; set; } // 2 for corners, 1 for sides, and 0 for middles
     }
 
     public struct RotatedPiece
