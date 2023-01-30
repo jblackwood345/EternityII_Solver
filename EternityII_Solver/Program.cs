@@ -9,15 +9,28 @@ namespace EternityII_Solver
 {
     class Program
     {
-        const int number_virtual_cores = 64;
+        static int number_virtual_cores = 0;
 
         static void Main()
         {
+            var cores = Environment.GetEnvironmentVariable("CORES");
+            if (cores != null)
+            {
+                number_virtual_cores = Int32.Parse(cores);
+            }
+            else
+            {
+                number_virtual_cores = Environment.ProcessorCount;
+            }
+
+            int loop_count = 0;
             while (true) // Solve for Eternity.
             {
+                loop_count++;
+
                 Prepare_Pieces_And_Heuristics();
 
-                Console.WriteLine("Solving...");
+                Console.WriteLine("Solving with {0} threads...", number_virtual_cores);
 
                 ConcurrentDictionary<int, long> index_counts = new ConcurrentDictionary<int, long>();
 
@@ -26,6 +39,7 @@ namespace EternityII_Solver
                 {
                     for (int x = 0; x < 5; x++)
                     {
+                        Console.WriteLine("Start loop {0}, repeat {1}", loop_count, x);
                         Stopwatch stopwatch = new Stopwatch();
                         stopwatch.Start();
 
@@ -35,13 +49,18 @@ namespace EternityII_Solver
                             index_counts.AddOrUpdate(j, solve_indexes[j], (id, count) => count + solve_indexes[j]);
 
                         stopwatch.Stop();
+                        Console.WriteLine("Finish loop {0}, repeat {1}, {2}ms", loop_count, x, stopwatch.ElapsedMilliseconds);
                     }
                 });
+                Console.WriteLine("Result {0}", result);
 
+                long total_index_count = 0;
                 for (int i = 0; i < 257; i++)
                 {
                     Console.WriteLine("{0} {1}", i, index_counts[i]); // This will only print valid numbers if you let the solver count how far you are.
+                    total_index_count += index_counts[i];
                 }
+                Console.WriteLine("Total {0}", total_index_count);
             }
         }
 
@@ -73,7 +92,7 @@ namespace EternityII_Solver
             {
                 node_count++;
 
-                //solve_index_counts[solve_index] = solve_index_counts[solve_index] + 1;
+                // solve_index_counts[solve_index] = solve_index_counts[solve_index] + 1;
 
                 if (solve_index > max_solve_index)
                 {
