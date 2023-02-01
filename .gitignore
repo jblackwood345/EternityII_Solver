@@ -351,4 +351,6 @@ MigrationBackup/
 
 .vscode/
 kotlin/.gradle
+kotlin/.idea
 kotlin/app/build
+kotlin/build

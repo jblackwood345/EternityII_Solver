@@ -1,5 +1,11 @@
 package eternityii
 
 fun main(args: Array<String>) {
-    println(args.joinToString())
+    val numCores = if ("cores" in args) {
+        args[args.indexOf("cores") + 1].toInt()
+    } else {
+        Runtime.getRuntime().availableProcessors()
+    }
+
+    Solver(numCores).run()
 }

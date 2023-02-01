@@ -1,0 +1,53 @@
+# This config file is only for overrides to the default config.
+build:
+  maxIssues: 0
+  excludeCorrectable: false
+  weights:
+
+config:
+  validation: true
+  warningsAsErrors: false
+  checkExhaustiveness: false
+  excludes: ''
+
+processors:
+  active: true
+  exclude:
+    - 'DetektProgressListener'
+
+console-reports:
+  active: true
+  exclude:
+     - 'ProjectStatisticsReport'
+     - 'ComplexityReport'
+     - 'NotificationReport'
+     - 'FindingsReport'
+     - 'FileBasedFindingsReport'
+
+output-reports:
+  active: true
+  exclude:
+
+complexity:
+  TooManyFunctions:
+    active: true
+    thresholdInClasses: 15
+
+coroutines:
+  InjectDispatcher:
+    active: false
+
+potential-bugs:
+  UnsafeCallOnNullableType:
+    active: false
+  MapGetWithNotNullAssertionOperator:
+    active: false
+
+style:
+  ForbiddenComment:
+    active: false
+  MagicNumber:
+    active: false
+  MaxLineLength:
+    active: true
+    maxLineLength: 120
