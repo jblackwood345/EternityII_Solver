@@ -7,5 +7,5 @@ fun main(args: Array<String>) {
         Runtime.getRuntime().availableProcessors()
     }
 
-    Solver(numCores).run()
+    SolverStarter(numCores).run()
 }
