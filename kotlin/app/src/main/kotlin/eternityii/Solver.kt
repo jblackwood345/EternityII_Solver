@@ -57,7 +57,7 @@ class Solver(
             nodeCount++
 
             // Uncomment to get this info printed.
-            solveIndexCounts[solveIndex] = solveIndexCounts[solveIndex] + 1
+            // solveIndexCounts[solveIndex] = solveIndexCounts[solveIndex] + 1
 
             if (solveIndex > maxSolveIndex) {
                 maxSolveIndex = solveIndex
