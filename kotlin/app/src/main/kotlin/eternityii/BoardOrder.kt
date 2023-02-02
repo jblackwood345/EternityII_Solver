@@ -1,7 +1,7 @@
 package eternityii
 
 object BoardOrder {
-    fun getBoardOrder(): List<SearchIndex> {
+    val boardSearchSequence: List<SearchIndex> = run {
         val boardOrder = listOf(
             listOf(196, 197, 198, 199, 200, 205, 210, 215, 220, 225, 230, 235, 243, 249, 254, 255),
             listOf(191, 192, 193, 194, 195, 204, 209, 214, 219, 224, 229, 234, 242, 248, 252, 253),
@@ -35,6 +35,6 @@ object BoardOrder {
             boardSearchSequenceList.add(boardSearchSequence[i]!!)
         }
 
-        return boardSearchSequenceList.toList()
+        boardSearchSequenceList.toList()
     }
 }
