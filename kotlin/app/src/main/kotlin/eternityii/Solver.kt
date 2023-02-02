@@ -16,15 +16,11 @@ class Solver(
     private val heuristicArray = Heuristics.heuristicArray
     private val boardSearchSequence = BoardOrder.boardSearchSequence
 
-    private val corners: Array<Array<RotatedPiece>?> = Array(529) { null }
-    private var bottomSidePiecesRotated: Map<UShort, List<RotatedPieceWithLeftBottom>> = mapOf()
-    private val masterPieceLookup: Array<Array<Array<RotatedPiece>?>?> = Array(256) { null }
-
     fun run() {
         var loopCount = 0
         while (true) {
             loopCount++
-            preparePiecesAndHeuristics()
+            val dynamicPieceData = preparePiecesAndHeuristics()
 
             println("Solving with $numCores threads...")
 
@@ -37,7 +33,7 @@ class Solver(
             runBlocking {
                 withContext(Dispatchers.IO) {
                     for (core in 1 until numCores) {
-                        async(Dispatchers.IO) { runOneSolver(core, loopCount, indexCounts) }
+                        async(Dispatchers.IO) { runOneSolver(core, loopCount, indexCounts, dynamicPieceData) }
                     }
                 }
             }
@@ -52,23 +48,28 @@ class Solver(
         }
     }
 
-    private fun runOneSolver(core: Int, loopCount: Int, indexCounts: ConcurrentHashMap<Int, Long>) {
+    private fun runOneSolver(
+        core: Int,
+        loopCount: Int,
+        indexCounts: ConcurrentHashMap<Int, Long>,
+        dynamicPieceData: DynamicPieceData
+    ) {
         for (repeat in 1..5) {
             println("Start core $core, loop $loopCount, repeat $repeat")
             val startTimeMs = System.currentTimeMillis()
 
-            val solveIndexes = solvePuzzle()
+            val solveIndexes = solvePuzzle(dynamicPieceData)
 
             for (j in 0..256) {
                 indexCounts[j] = indexCounts[j]!! + solveIndexes[j]
             }
 
-            val elapsedTimeS = (System.currentTimeMillis() - startTimeMs) / 1000
-            println("Finish core $core loop $loopCount, repeat $repeat, $elapsedTimeS s")
+            val elapsedTimeSeconds = (System.currentTimeMillis() - startTimeMs) / 1000
+            println("Finish core $core loop $loopCount, repeat $repeat, $elapsedTimeSeconds s")
         }
     }
 
-    private fun solvePuzzle(): LongArray {
+    private fun solvePuzzle(dynamicPieceData: DynamicPieceData): LongArray {
         val pieceUsed = BooleanArray(257)
         val cumulativeHeuristicSideCount = ByteArray(256)
         val pieceIndexToTryNext = ByteArray(256)
@@ -78,7 +79,7 @@ class Solver(
         val rand = Random.Default
 
         val bottomSides: Array<Array<RotatedPiece>?> = Array(529) { null }
-        bottomSidePiecesRotated.forEach { (key, rotatedPieceWithLeftBottoms) ->
+        dynamicPieceData.bottomSidePiecesRotated.forEach { (key, rotatedPieceWithLeftBottoms) ->
             bottomSides[key.toInt()] = rotatedPieceWithLeftBottoms.sortedByDescending {
                 if (it.rotatedPiece.heuristicSideCount > 0) { 100 } else { 0 } + rand.nextInt(0, 99)
             }
@@ -87,7 +88,7 @@ class Solver(
         }
 
         // Get rid of pieces 1 or 2 first.
-        board[0] = corners[0]!!.toList().sortedBy { rand.nextInt(1, 1000) }.first()
+        board[0] = dynamicPieceData.corners[0]!!.toList().sortedBy { rand.nextInt(1, 1000) }.first()
 
         pieceUsed[board[0].pieceNumber.toInt()] = true
         cumulativeBreaks[0] = 0
@@ -133,7 +134,7 @@ class Solver(
                 if (col < 15) {
                     bottomSides[board[col - 1].rightSide.toInt() * 23 + 0]
                 } else {
-                    corners[board[col - 1].rightSide.toInt() * 23 + 0]
+                    dynamicPieceData.corners[board[col - 1].rightSide.toInt() * 23 + 0]
                 }
             } else {
                 val leftSide: Int = if (col == 0.toByte()) {
@@ -141,7 +142,9 @@ class Solver(
                 } else {
                     board[row * 16 + (col - 1)].rightSide.toInt()
                 }
-                masterPieceLookup[row * 16 + col]!![leftSide * 23 + board[(row - 1) * 16 + col].topSide.toInt()]
+                dynamicPieceData.masterPieceLookup[
+                    row * 16 + col
+                ]!![leftSide * 23 + board[(row - 1) * 16 + col].topSide.toInt()]
             }
 
             var foundPiece = false
@@ -205,7 +208,7 @@ class Solver(
         }
     }
 
-    private fun preparePiecesAndHeuristics() {
+    private fun preparePiecesAndHeuristics(): DynamicPieceData {
         val cornerPieces = pieces.filter { it.pieceType == 2.toUByte() }.toList()
         val sidePieces = pieces.filter { it.pieceType == 1.toUByte() }.toList()
         val middlePieces = pieces.filter {
@@ -226,7 +229,7 @@ class Solver(
             .map { piece -> RotatedPieces.rotatedPieces(piece, allowBreaks = true) }
             .flatten()
 
-        bottomSidePiecesRotated = sidesWithoutBreaks
+        val bottomSidePiecesRotated = sidesWithoutBreaks
             .filter { it.rotatedPiece.rotations == 0.toByte() }
             .groupBy { it.leftBottom }
             .toMap()
@@ -286,6 +289,7 @@ class Solver(
 
         val rand = Random.Default
 
+        val corners: Array<Array<RotatedPiece>?> = Array(529) { null }
         val leftSides: Array<Array<RotatedPiece>?> = Array(529) { null }
         val topSides: Array<Array<RotatedPiece>?> = Array(529) { null }
         val rightSidesWithBreaks: Array<Array<RotatedPiece>?> = Array(529) { null }
@@ -306,6 +310,8 @@ class Solver(
         buildArray(southStartPieceRotated, southStart, rand)
         buildArray(westStartPieceRotated, westStart, rand)
         buildArray(startPieceRotated, start, rand)
+
+        val masterPieceLookup: Array<Array<Array<RotatedPiece>?>?> = Array(256) { null }
 
         for (i in 0..255) {
             val row = boardSearchSequence[i].row.toInt()
@@ -368,5 +374,7 @@ class Solver(
                 masterPieceLookup[row * 16 + col] = lookup
             }
         }
+
+        return DynamicPieceData(corners, bottomSidePiecesRotated, masterPieceLookup)
     }
 }
