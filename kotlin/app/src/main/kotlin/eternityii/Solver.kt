@@ -16,19 +16,8 @@ class Solver(
     private val heuristicArray = Heuristics.heuristicArray
     private val boardSearchSequence = BoardOrder.boardSearchSequence
 
-    private lateinit var bottomSidePiecesRotated: Map<UShort, List<RotatedPieceWithLeftBottom>>
-
     private val corners: Array<Array<RotatedPiece>?> = Array(529) { null }
-    private val leftSides: Array<Array<RotatedPiece>?> = Array(529) { null }
-    private val topSides: Array<Array<RotatedPiece>?> = Array(529) { null }
-    private val rightSidesWithBreaks: Array<Array<RotatedPiece>?> = Array(529) { null }
-    private val rightSidesWithoutBreaks: Array<Array<RotatedPiece>?> = Array(529) { null }
-    private val middlesWithBreak: Array<Array<RotatedPiece>?> = Array(529) { null }
-    private val middlesNoBreak: Array<Array<RotatedPiece>?> = Array(529) { null }
-    private val southStart: Array<Array<RotatedPiece>?> = Array(529) { null }
-    private val westStart: Array<Array<RotatedPiece>?> = Array(529) { null }
-    private val start: Array<Array<RotatedPiece>?> = Array(529) { null }
-
+    private var bottomSidePiecesRotated: Map<UShort, List<RotatedPieceWithLeftBottom>> = mapOf()
     private val masterPieceLookup: Array<Array<Array<RotatedPiece>?>?> = Array(256) { null }
 
     fun run() {
@@ -74,8 +63,8 @@ class Solver(
                 indexCounts[j] = indexCounts[j]!! + solveIndexes[j]
             }
 
-            val elapsedTimeMs = System.currentTimeMillis() - startTimeMs
-            println("Finish core $core loop $loopCount, repeat $repeat, $elapsedTimeMs ms")
+            val elapsedTimeS = (System.currentTimeMillis() - startTimeMs) / 1000
+            println("Finish core $core loop $loopCount, repeat $repeat, $elapsedTimeS s")
         }
     }
 
@@ -296,6 +285,16 @@ class Solver(
             .toMap()
 
         val rand = Random.Default
+
+        val leftSides: Array<Array<RotatedPiece>?> = Array(529) { null }
+        val topSides: Array<Array<RotatedPiece>?> = Array(529) { null }
+        val rightSidesWithBreaks: Array<Array<RotatedPiece>?> = Array(529) { null }
+        val rightSidesWithoutBreaks: Array<Array<RotatedPiece>?> = Array(529) { null }
+        val middlesWithBreak: Array<Array<RotatedPiece>?> = Array(529) { null }
+        val middlesNoBreak: Array<Array<RotatedPiece>?> = Array(529) { null }
+        val southStart: Array<Array<RotatedPiece>?> = Array(529) { null }
+        val westStart: Array<Array<RotatedPiece>?> = Array(529) { null }
+        val start: Array<Array<RotatedPiece>?> = Array(529) { null }
 
         buildArray(cornerPiecesRotated, corners, rand)
         buildArray(leftSidePiecesRotated, leftSides, rand)

@@ -80,6 +80,6 @@ object Store {
         } catch (e: FileAlreadyExistsException) {
             // Fine.
         }
-        File("$path/$filename").writeText(boardString)
+        File("$path/$filename").writeText("$boardString\n")
     }
 }
