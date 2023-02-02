@@ -26,7 +26,7 @@ class Solver(
     val start: Array<Array<RotatedPiece>?> = Array(529) { null }
 
     var boardSearchSequence: List<SearchIndex> = listOf()
-    var breakArray: UByteArray = ubyteArrayOf()
+    var breakArray: UByteArray = Breaks.breakArray
     var heuristicArray: IntArray = IntArray(256)
     val masterPieceLookup: Array<Array<Array<RotatedPiece>?>?> = Array(256) { null }
 
@@ -308,7 +308,6 @@ class Solver(
         buildArray(startPieceRotated, start, rand)
 
         boardSearchSequence = BoardOrder.getBoardOrder()
-        breakArray = Breaks.breakArray
 
         for (i in 0..255) {
             val row = boardSearchSequence[i].row.toInt()
