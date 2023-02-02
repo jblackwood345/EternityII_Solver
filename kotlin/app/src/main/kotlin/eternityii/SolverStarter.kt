@@ -18,7 +18,7 @@ class SolverStarter(
             loopCount++
             val dynamicPieceData = preparePiecesAndHeuristics()
 
-            println("Solving with $numCores threads...")
+            println("Solving with $numCores cores...")
 
             val indexCounts: ConcurrentHashMap<Int, Long> = ConcurrentHashMap<Int, Long>()
             for (j in 0..256) {
@@ -37,10 +37,10 @@ class SolverStarter(
             var totalIndexCount = 0L
             for (idx in 0..256) {
                 // This will only print valid numbers if you let the solver count how far you are.
-                println("$idx ${indexCounts[idx]}")
+                println("$idx ${indexCounts[idx]!!.fmt()}")
                 totalIndexCount += indexCounts[idx]!!
             }
-            println("Total $totalIndexCount")
+            println("Total ${totalIndexCount.fmt()}")
         }
     }
 
@@ -51,17 +51,17 @@ class SolverStarter(
         dynamicPieceData: DynamicPieceData
     ) {
         for (repeat in 1..5) {
-            println("Start core $core, loop $loopCount, repeat $repeat")
+            println("Core $core: start loop $loopCount, repeat $repeat")
             val startTimeMs = System.currentTimeMillis()
 
-            val solveIndexes = Solver(dynamicPieceData).run()
+            val solveIndexes = Solver(dynamicPieceData, core).run()
 
             for (j in 0..256) {
                 indexCounts[j] = indexCounts[j]!! + solveIndexes[j]
             }
 
             val elapsedTimeSeconds = (System.currentTimeMillis() - startTimeMs) / 1000
-            println("Finish core $core loop $loopCount, repeat $repeat, $elapsedTimeSeconds s")
+            println("Core $core: finish loop $loopCount, repeat $repeat in $elapsedTimeSeconds seconds")
         }
     }
 

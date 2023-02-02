@@ -5,7 +5,8 @@ package eternityii
 import kotlin.random.Random
 
 class Solver(
-    private val dynamicPieceData: DynamicPieceData
+    private val dynamicPieceData: DynamicPieceData,
+    private val core: Int
 ) {
     private val breakArray = Breaks.breakArray
     private val heuristicArray = Heuristics.heuristicArray
@@ -19,7 +20,22 @@ class Solver(
     private val rand = Random.Default
     private val bottomSides: Array<Array<RotatedPiece>?> = Array(529) { null }
 
-    fun run(): LongArray {
+    /** This goes from 0....255; we've solved #0 already, so start at #1. */
+    private var solveIndex = 1
+    private var maxSolveIndex = solveIndex
+    private var nodeCount = 0L
+
+    private val progressTracker: ProgressTracker = ProgressTracker(this::reportProgress)
+
+    private fun reportProgress(elapsedTimeSeconds: Long) {
+        val rate = if (elapsedTimeSeconds == 0L) { 0 } else { nodeCount / elapsedTimeSeconds }
+        println(
+            "Core $core: ${nodeCount.fmt()} nodes in $elapsedTimeSeconds seconds, ${rate.fmt()} per second, " +
+                "max depth $maxSolveIndex"
+        )
+    }
+
+    init {
         dynamicPieceData.bottomSidePiecesRotated.forEach { (key, rotatedPieceWithLeftBottoms) ->
             bottomSides[key.toInt()] = rotatedPieceWithLeftBottoms.sortedByDescending {
                 if (it.rotatedPiece.heuristicSideCount > 0) { 100 } else { 0 } + rand.nextInt(0, 99)
@@ -34,17 +50,14 @@ class Solver(
         pieceUsed[board[0].pieceNumber.toInt()] = true
         cumulativeBreaks[0] = 0
         cumulativeHeuristicSideCount[0] = board[0].heuristicSideCount
+    }
 
-        // This goes from 0....255; we've solved #0 already, so start at #1.
-        var solveIndex = 1
-        var maxSolveIndex = solveIndex
-        var nodeCount = 0L
-
+    fun run(): LongArray {
         while (true) {
             nodeCount++
 
             // Uncomment to get this info printed.
-            // solveIndexCounts[solveIndex] = solveIndexCounts[solveIndex] + 1
+            solveIndexCounts[solveIndex] = solveIndexCounts[solveIndex] + 1
 
             if (solveIndex > maxSolveIndex) {
                 maxSolveIndex = solveIndex
@@ -53,12 +66,14 @@ class Solver(
                     Store.saveBoard(board.toList(), solveIndex.toUShort())
 
                     if (solveIndex >= 256) {
+                        progressTracker.cancel()
                         return solveIndexCounts
                     }
                 }
             }
 
             if (nodeCount > 50000000000) {
+                progressTracker.cancel()
                 return solveIndexCounts
             }
 
