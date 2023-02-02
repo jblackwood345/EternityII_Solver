@@ -10,7 +10,7 @@ namespace EternityII_Solver
     public static class Util
     {
         private static readonly List<int> side_edges = new List<int>() { 1, 5, 9, 13, 17 };
-        private static readonly List<int> middle_edges = new List<int>() { 2, 3, 4, 6, 7, 8, 10, 11, 12, 14, 15, 16, 18, 19, 20, 21, 22 };
+        // private static readonly List<int> middle_edges = new List<int>() { 2, 3, 4, 6, 7, 8, 10, 11, 12, 14, 15, 16, 18, 19, 20, 21, 22 };
         private static List<int> heuristic_sides = new List<int>() { 13, 16, 10 }; // There is a lot of overlap between these sides
         private static List<int> break_indexes_allowed = new List<int>() { 201, 206, 211, 216, 221, 225, 229, 233, 237, 239 };
 
