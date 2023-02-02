@@ -17,7 +17,6 @@ class Solver(
     private val cumulativeBreaks = ByteArray(256)
     private val solveIndexCounts = LongArray(257)
     private val board: Array<RotatedPiece> = Array(256) { RotatedPiece.nullPiece }
-    private val rand = Random.Default
     private val bottomSides: Array<Array<RotatedPiece>?> = Array(529) { null }
 
     /** This goes from 0....255; we've solved #0 already, so start at #1. */
@@ -36,6 +35,8 @@ class Solver(
     }
 
     init {
+        val rand = Random.Default
+
         dynamicPieceData.bottomSidePiecesRotated.forEach { (key, rotatedPieceWithLeftBottoms) ->
             bottomSides[key.toInt()] = rotatedPieceWithLeftBottoms.sortedByDescending {
                 if (it.rotatedPiece.heuristicSideCount > 0) { 100 } else { 0 } + rand.nextInt(0, 99)
