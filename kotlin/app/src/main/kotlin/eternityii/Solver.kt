@@ -12,23 +12,24 @@ import kotlin.random.Random
 class Solver(
     private val numCores: Int
 ) {
+    private val breakArray = Breaks.breakArray
+    private val heuristicArray = Heuristics.heuristicArray
+
     private lateinit var bottomSidePiecesRotated: Map<UShort, List<RotatedPieceWithLeftBottom>>
 
-    val corners: Array<Array<RotatedPiece>?> = Array(529) { null }
-    val leftSides: Array<Array<RotatedPiece>?> = Array(529) { null }
-    val topSides: Array<Array<RotatedPiece>?> = Array(529) { null }
-    val rightSidesWithBreaks: Array<Array<RotatedPiece>?> = Array(529) { null }
-    val rightSidesWithoutBreaks: Array<Array<RotatedPiece>?> = Array(529) { null }
-    val middlesWithBreak: Array<Array<RotatedPiece>?> = Array(529) { null }
-    val middlesNoBreak: Array<Array<RotatedPiece>?> = Array(529) { null }
-    val southStart: Array<Array<RotatedPiece>?> = Array(529) { null }
-    val westStart: Array<Array<RotatedPiece>?> = Array(529) { null }
-    val start: Array<Array<RotatedPiece>?> = Array(529) { null }
+    private val corners: Array<Array<RotatedPiece>?> = Array(529) { null }
+    private val leftSides: Array<Array<RotatedPiece>?> = Array(529) { null }
+    private val topSides: Array<Array<RotatedPiece>?> = Array(529) { null }
+    private val rightSidesWithBreaks: Array<Array<RotatedPiece>?> = Array(529) { null }
+    private val rightSidesWithoutBreaks: Array<Array<RotatedPiece>?> = Array(529) { null }
+    private val middlesWithBreak: Array<Array<RotatedPiece>?> = Array(529) { null }
+    private val middlesNoBreak: Array<Array<RotatedPiece>?> = Array(529) { null }
+    private val southStart: Array<Array<RotatedPiece>?> = Array(529) { null }
+    private val westStart: Array<Array<RotatedPiece>?> = Array(529) { null }
+    private val start: Array<Array<RotatedPiece>?> = Array(529) { null }
 
-    var boardSearchSequence: List<SearchIndex> = listOf()
-    var breakArray: UByteArray = Breaks.breakArray
-    var heuristicArray: IntArray = IntArray(256)
-    val masterPieceLookup: Array<Array<Array<RotatedPiece>?>?> = Array(256) { null }
+    private var boardSearchSequence: List<SearchIndex> = listOf()
+    private val masterPieceLookup: Array<Array<Array<RotatedPiece>?>?> = Array(256) { null }
 
     fun run() {
         var loopCount = 0
@@ -47,7 +48,7 @@ class Solver(
             runBlocking {
                 withContext(Dispatchers.IO) {
                     for (core in 1 until numCores) {
-                        async(Dispatchers.IO) { runOneSolver(loopCount, indexCounts) }
+                        async(Dispatchers.IO) { runOneSolver(core, loopCount, indexCounts) }
                     }
                 }
             }
@@ -62,9 +63,9 @@ class Solver(
         }
     }
 
-    private fun runOneSolver(loopCount: Int, indexCounts: ConcurrentHashMap<Int, Long>) {
-        for (x in 0..4) {
-            println("Start loop $loopCount, repeat $x")
+    private fun runOneSolver(core: Int, loopCount: Int, indexCounts: ConcurrentHashMap<Int, Long>) {
+        for (repeat in 1..5) {
+            println("Start core $core, loop $loopCount, repeat $repeat")
             val startTimeMs = System.currentTimeMillis()
 
             val solveIndexes = solvePuzzle()
@@ -74,7 +75,7 @@ class Solver(
             }
 
             val elapsedTimeMs = System.currentTimeMillis() - startTimeMs
-            println("Finish loop $loopCount, repeat $x, $elapsedTimeMs ms")
+            println("Finish core $core loop $loopCount, repeat $repeat, $elapsedTimeMs ms")
         }
     }
 
@@ -167,7 +168,7 @@ class Solver(
                     }
 
                     if (!pieceUsed[pieceCandidates[i].pieceNumber.toInt()]) {
-                        if (solveIndex <= MAX_HEURISTIC_INDEX) {
+                        if (solveIndex <= Heuristics.MAX_HEURISTIC_INDEX) {
                             if ((cumulativeHeuristicSideCount[solveIndex - 1] + pieceCandidates[i].heuristicSideCount) <
                                 heuristicArray[solveIndex]
                             ) {
@@ -370,20 +371,5 @@ class Solver(
                 masterPieceLookup[row * 16 + col] = lookup
             }
         }
-
-        for (i in 0..255) {
-            when {
-                i <= 16 -> heuristicArray[i] = 0
-                i <= 26 -> heuristicArray[i] = ((i.toFloat() - 16) * 2.8F).toInt()
-                i <= 56 -> heuristicArray[i] = ((i.toFloat() - 26) * 1.43333F + 28).toInt()
-                i <= 76 -> heuristicArray[i] = (((i.toFloat() - 56) * 0.9F) + 71).toInt()
-                i <= 102 -> heuristicArray[i] = ((((i.toFloat() - 76) * 0.6538F)) + 89).toInt()
-                i <= MAX_HEURISTIC_INDEX -> heuristicArray[i] = ((((i.toFloat() - 102) / 4.4615F)) + 106).toInt()
-            }
-        }
-    }
-
-    companion object {
-        const val MAX_HEURISTIC_INDEX = 160
     }
 }
