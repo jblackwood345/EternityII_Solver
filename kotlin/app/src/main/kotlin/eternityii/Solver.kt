@@ -108,11 +108,11 @@ class Solver(
             var foundPiece = false
 
             if (pieceCandidates != null) {
-                val breaksThisTurn = breakArray[solveIndex] - cumulativeBreaks[solveIndex - 1].toUByte()
+                val breaksThisTurn = breakArray[solveIndex].toInt() - cumulativeBreaks[solveIndex - 1]
                 val tryIndex = pieceIndexToTryNext[solveIndex]
 
                 for (i in tryIndex until pieceCandidates.size) {
-                    if (pieceCandidates[i].breakCount > breaksThisTurn.toInt()) {
+                    if (pieceCandidates[i].breakCount > breaksThisTurn) {
                         break
                     }
 
