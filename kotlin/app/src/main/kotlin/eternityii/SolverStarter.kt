@@ -186,57 +186,36 @@ class SolverStarter(
             val row = boardSearchSequence[i].row.toInt()
             val col = boardSearchSequence[i].col.toInt()
 
-            val lookup = when (row) {
-                15 -> {
-                    if (col == 15 || col == 0) {
-                        corners
-                    } else {
-                        topSides
-                    }
+            val lookup = when {
+                row == 15 && (col == 15 || col == 0) -> corners
+
+                row == 15 -> topSides
+
+                // Don't populate the master lookup table since we randomize every time.
+                row == 0 -> null
+
+                col == 15 && i < Breaks.firstBreakIndex -> rightSidesWithoutBreaks
+
+                col == 15 -> rightSidesWithBreaks
+
+                col == 0 -> leftSides
+
+                row == 7 -> when {
+                    col == 7 -> start
+                    col == 6 -> westStart
+                    i < Breaks.firstBreakIndex -> middlesNoBreak
+                    else -> middlesWithBreak
                 }
 
-                0 -> {
-                    // Don't populate the master lookup table since we randomize every time.
-                    null
+                row == 6 -> when {
+                    col == 7 -> southStart
+                    i < Breaks.firstBreakIndex -> middlesNoBreak
+                    else -> middlesWithBreak
                 }
 
-                else -> when (col) {
-                    15 -> {
-                        if (i < Breaks.firstBreakIndex) {
-                            rightSidesWithoutBreaks
-                        } else {
-                            rightSidesWithBreaks
-                        }
-                    }
+                i < Breaks.firstBreakIndex -> middlesNoBreak
 
-                    0 -> leftSides
-
-                    else -> when (row) {
-                        7 -> when (col) {
-                            7 -> start
-                            6 -> westStart
-                            else -> if (i < Breaks.firstBreakIndex) {
-                                middlesNoBreak
-                            } else {
-                                middlesWithBreak
-                            }
-                        }
-
-                        6 -> if (col == 7) {
-                            southStart
-                        } else if (i < Breaks.firstBreakIndex) {
-                            middlesNoBreak
-                        } else {
-                            middlesWithBreak
-                        }
-
-                        else -> if (i < Breaks.firstBreakIndex) {
-                            middlesNoBreak
-                        } else {
-                            middlesWithBreak
-                        }
-                    }
-                }
+                else -> middlesWithBreak
             }
 
             if (lookup != null) {
