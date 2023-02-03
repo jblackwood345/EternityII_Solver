@@ -80,11 +80,12 @@ class Solver(
 
             val row = boardSearchSequence[solveIndex].row
             val col = boardSearchSequence[solveIndex].col
+            val rowCol = row * 16 + col
 
-            if (board[row * 16 + col].pieceNumber > 0U) {
-                // require(pieceUsed[board[row * 16 + col].pieceNumber.toInt()]) { "ERROR!" }
-                pieceUsed[board[row * 16 + col].pieceNumber.toInt()] = false
-                board[row * 16 + col] = RotatedPiece.nullPiece
+            if (board[rowCol].pieceNumber > 0U) {
+                // require(pieceUsed[board[rowCol].pieceNumber.toInt()]) { "ERROR!" }
+                pieceUsed[board[rowCol].pieceNumber.toInt()] = false
+                board[rowCol] = RotatedPiece.nullPiece
             }
 
             val pieceCandidates = if (row == 0.toByte()) {
@@ -100,7 +101,7 @@ class Solver(
                     board[row * 16 + (col - 1)].rightSide.toInt()
                 }
                 dynamicPieceData.masterPieceLookup[
-                    row * 16 + col
+                    rowCol
                 ]!![leftSide * 23 + board[(row - 1) * 16 + col].topSide.toInt()]
             }
 
@@ -109,9 +110,8 @@ class Solver(
             if (pieceCandidates != null) {
                 val breaksThisTurn = breakArray[solveIndex] - cumulativeBreaks[solveIndex - 1].toUByte()
                 val tryIndex = pieceIndexToTryNext[solveIndex]
-                val pieceCandidateLength = pieceCandidates.size
 
-                for (i in tryIndex until pieceCandidateLength) {
+                for (i in tryIndex until pieceCandidates.size) {
                     if (pieceCandidates[i].breakCount > breaksThisTurn.toInt()) {
                         break
                     }
@@ -127,7 +127,7 @@ class Solver(
                         foundPiece = true
 
                         val piece = pieceCandidates[i]
-                        board[row * 16 + col] = piece
+                        board[rowCol] = piece
                         pieceUsed[piece.pieceNumber.toInt()] = true
 
                         cumulativeBreaks[solveIndex] = (cumulativeBreaks[solveIndex - 1] + piece.breakCount).toByte()
