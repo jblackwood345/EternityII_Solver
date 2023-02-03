@@ -117,13 +117,13 @@ class Solver(
                     }
 
                     if (!pieceUsed[pieceCandidates[i].pieceNumber.toInt()]) {
-                        if (solveIndex <= Heuristics.MAX_HEURISTIC_INDEX) {
-                            if ((cumulativeHeuristicSideCount[solveIndex - 1] + pieceCandidates[i].heuristicSideCount) <
+                        if (solveIndex <= Heuristics.MAX_HEURISTIC_INDEX &&
+                            (cumulativeHeuristicSideCount[solveIndex - 1] + pieceCandidates[i].heuristicSideCount) <
                                 heuristicArray[solveIndex]
-                            ) {
-                                break
-                            }
+                        ) {
+                            break
                         }
+
                         foundPiece = true
 
                         val piece = pieceCandidates[i]
