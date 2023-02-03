@@ -12,8 +12,12 @@ import kotlin.random.Random
 class SolverStarter(
     private val numCores: Int
 ) {
+    private var maxDepth = 0
+
     fun run() {
+        val overallStartTimeMs = System.currentTimeMillis()
         var loopCount = 0
+
         while (true) {
             loopCount++
             val dynamicPieceData = preparePiecesAndHeuristics()
@@ -37,10 +41,16 @@ class SolverStarter(
             var totalIndexCount = 0L
             for (idx in 0..256) {
                 // This will only print valid numbers if you let the solver count how far you are.
-                println("$idx ${indexCounts[idx]!!.fmt()}")
-                totalIndexCount += indexCounts[idx]!!
+                val thisIndexCount = indexCounts[idx]!!
+                println("$idx ${thisIndexCount.fmt()}")
+                totalIndexCount += thisIndexCount
             }
-            println("Total ${totalIndexCount.fmt()}")
+            val overallElapsedTimeSeconds = (System.currentTimeMillis() - overallStartTimeMs) / 1000
+            val rate = if (overallElapsedTimeSeconds == 0L) { 0 } else { totalIndexCount / overallElapsedTimeSeconds }
+            println(
+                "Total ${totalIndexCount.fmt()} nodes in $overallElapsedTimeSeconds seconds, " +
+                    "${rate.fmt()} per second, max depth $maxDepth"
+            )
         }
     }
 
@@ -54,10 +64,14 @@ class SolverStarter(
             println("Core $core: start loop $loopCount, repeat $repeat")
             val startTimeMs = System.currentTimeMillis()
 
-            val solveIndexes = Solver(dynamicPieceData, core).run()
+            val solverResult = Solver(dynamicPieceData, core).run()
 
             for (j in 0..256) {
-                indexCounts[j] = indexCounts[j]!! + solveIndexes[j]
+                indexCounts[j] = indexCounts[j]!! + solverResult.solveIndexCounts[j]
+            }
+
+            if (solverResult.maxDepth > maxDepth) {
+                maxDepth = solverResult.maxDepth
             }
 
             val elapsedTimeSeconds = (System.currentTimeMillis() - startTimeMs) / 1000

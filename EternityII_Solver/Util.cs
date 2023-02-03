@@ -631,5 +631,10 @@ namespace EternityII_Solver
 
             return pieces.ToList();
         }
+
+        public static String fmt(long input)
+        { 
+            return input.ToString("N0");
+        }
     }
 }

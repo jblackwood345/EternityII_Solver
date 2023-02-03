@@ -53,7 +53,7 @@ class Solver(
         cumulativeHeuristicSideCount[0] = board[0].heuristicSideCount
     }
 
-    fun run(): LongArray {
+    fun run(): SolverResult {
         while (true) {
             nodeCount++
 
@@ -68,14 +68,14 @@ class Solver(
 
                     if (solveIndex >= 256) {
                         progressTracker.cancel()
-                        return solveIndexCounts
+                        return SolverResult(solveIndexCounts, maxSolveIndex)
                     }
                 }
             }
 
             if (nodeCount > 50000000000) {
                 progressTracker.cancel()
-                return solveIndexCounts
+                return SolverResult(solveIndexCounts, maxSolveIndex)
             }
 
             val row = boardSearchSequence[solveIndex].row

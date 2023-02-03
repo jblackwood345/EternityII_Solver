@@ -10,6 +10,7 @@ namespace EternityII_Solver
     class Program
     {
         static int number_virtual_cores = 0;
+        static int max_depth = 0;
 
         static void Main()
         {
@@ -22,6 +23,9 @@ namespace EternityII_Solver
             {
                 number_virtual_cores = Environment.ProcessorCount;
             }
+            
+            Stopwatch overallStopwatch = new Stopwatch();
+            overallStopwatch.Start();
 
             int loop_count = 0;
             while (true) // Solve for Eternity.
@@ -30,41 +34,55 @@ namespace EternityII_Solver
 
                 Prepare_Pieces_And_Heuristics();
 
-                Console.WriteLine("Solving with {0} threads...", number_virtual_cores);
+                Console.WriteLine("Solving with {0} cores...", number_virtual_cores);
 
                 ConcurrentDictionary<int, long> index_counts = new ConcurrentDictionary<int, long>();
 
                 // This only runs number_vcpu-1 threads; we need to save one for the us
-                var result = Parallel.For(1, number_virtual_cores, (i, state) =>
+                var result = Parallel.For(1, number_virtual_cores, (core, state) =>
                 {
-                    for (int x = 0; x < 5; x++)
+                    for (int repeat = 1; repeat <= 5; repeat++)
                     {
-                        Console.WriteLine("Start loop {0}, repeat {1}", loop_count, x);
+                        Console.WriteLine("Core {0}: start loop {1}, repeat {2}", core, loop_count, repeat);
                         Stopwatch stopwatch = new Stopwatch();
                         stopwatch.Start();
 
-                        long[] solve_indexes = SolvePuzzle();
+                        SolverResult solver_result = SolvePuzzle();
 
                         for (int j = 0; j < 257; j++)
-                            index_counts.AddOrUpdate(j, solve_indexes[j], (id, count) => count + solve_indexes[j]);
+                            index_counts.AddOrUpdate(j, solver_result.solve_indexes[j], (id, count) => count + solver_result.solve_indexes[j]);
+
+                        if (solver_result.max_depth > max_depth)
+                        {
+                            max_depth = solver_result.max_depth;
+                        }
 
                         stopwatch.Stop();
-                        Console.WriteLine("Finish loop {0}, repeat {1}, {2}ms", loop_count, x, stopwatch.ElapsedMilliseconds);
+                        Console.WriteLine("Core {0}: finish loop {1}, repeat {2} in {3} seconds", core, loop_count, repeat, (stopwatch.ElapsedMilliseconds) / 1000);
                     }
                 });
                 Console.WriteLine("Result {0}", result);
 
+                // This will only print valid numbers if you let the solver count how far you are.
                 long total_index_count = 0;
                 for (int i = 0; i < 257; i++)
                 {
-                    Console.WriteLine("{0} {1}", i, index_counts[i]); // This will only print valid numbers if you let the solver count how far you are.
+                    Console.WriteLine("{0} {1}", i, Util.fmt(index_counts[i])); 
                     total_index_count += index_counts[i];
                 }
-                Console.WriteLine("Total {0}", total_index_count);
+
+                var elapsed_time_seconds = (overallStopwatch.ElapsedMilliseconds / 1000);
+                var rate = total_index_count / elapsed_time_seconds;
+                Console.WriteLine("Total {0} nodes in {1} seconds, {2} per second, max depth {3}",
+                    Util.fmt(total_index_count),
+                    elapsed_time_seconds,
+                    Util.fmt(rate),
+                    max_depth
+                );
             }
         }
 
-        static unsafe long[] SolvePuzzle()
+        static unsafe SolverResult SolvePuzzle()
         {
             bool* piece_used = stackalloc bool[257];
             byte* cumulative_heuristic_side_count = stackalloc byte[256];
@@ -92,6 +110,7 @@ namespace EternityII_Solver
             {
                 node_count++;
 
+                // Uncomment to get this info printed.
                 // solve_index_counts[solve_index] = solve_index_counts[solve_index] + 1;
 
                 if (solve_index > max_solve_index)
@@ -108,13 +127,13 @@ namespace EternityII_Solver
                         Util.Save_Board(board_to_save, (ushort)solve_index);
 
                         if (solve_index >= 256)
-                            return solve_index_counts;
+                            return new SolverResult() { solve_indexes = solve_index_counts, max_depth = max_solve_index };
                     }
                 }
 
                 if (node_count > 50000000000)
                 {
-                    return solve_index_counts;
+                    return new SolverResult() { solve_indexes = solve_index_counts, max_depth = max_solve_index };
                 }
 
                 byte row = board_search_sequence[solve_index].Row;

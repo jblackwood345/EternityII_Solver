@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
  */
 class ProgressTracker(
     private val jobFunction: (Long) -> Unit,
-    private val repeatEveryMs: Long = 300_000L
+    private val repeatEveryMs: Long = 30_000L
 ) {
     private val startTimeMs = System.currentTimeMillis()
 

@@ -33,4 +33,10 @@ namespace EternityII_Solver
         public byte Row { get; set; }
         public byte Column { get; set; }
     }
+
+    public struct SolverResult
+    {
+        public long[] solve_indexes { get; set; }
+        public int max_depth { get; set; }
+    }
 }
