@@ -27,7 +27,9 @@ namespace EternityII_Solver
             Stopwatch overallStopwatch = new Stopwatch();
             overallStopwatch.Start();
 
+            long total_index_count = 0;
             int loop_count = 0;
+            
             while (true) // Solve for Eternity.
             {
                 loop_count++;
@@ -64,7 +66,6 @@ namespace EternityII_Solver
                 Console.WriteLine("Result {0}", result);
 
                 // This will only print valid numbers if you let the solver count how far you are.
-                long total_index_count = 0;
                 for (int i = 0; i < 257; i++)
                 {
                     Console.WriteLine("{0} {1}", i, Util.fmt(index_counts[i])); 

@@ -16,6 +16,7 @@ class SolverStarter(
 
     fun run() {
         val overallStartTimeMs = System.currentTimeMillis()
+        var totalIndexCount = 0L
         var loopCount = 0
 
         while (true) {
@@ -38,7 +39,6 @@ class SolverStarter(
                 }
             }
 
-            var totalIndexCount = 0L
             for (idx in 0..256) {
                 // This will only print valid numbers if you let the solver count how far you are.
                 val thisIndexCount = indexCounts[idx]!!
