@@ -81,9 +81,9 @@ class SolverStarter(
 
     private fun buildArray(
         inputMap: Map<UShort, List<RotatedPieceWithLeftBottom>>,
-        outputArray: Array<Array<RotatedPiece>?>,
         rand: Random
-    ) {
+    ): Array<Array<RotatedPiece>?> {
+        val outputArray: Array<Array<RotatedPiece>?> = Array(529) { null }
         inputMap.forEach { (key, rotatedPieceWithLeftBottoms) ->
             // You can't use rand inside the sortedByDescending block because it is called multiple times and relies on
             // having the same value every time.
@@ -94,7 +94,17 @@ class SolverStarter(
                 .map { it.rotatedPiece }
                 .toTypedArray()
         }
+        return outputArray
     }
+
+    private fun buildRotatedPiecesMap(
+        inputList: List<RotatedPieceWithLeftBottom>,
+        rotation: Int
+    ): Map<UShort, List<RotatedPieceWithLeftBottom>> =
+        inputList
+            .filter { it.rotatedPiece.rotations.toInt() == rotation }
+            .groupBy { it.leftBottom }
+            .toMap()
 
     private fun preparePiecesAndHeuristics(): DynamicPieceData {
         val cornerPieces = pieces.filter { it.pieceType == 2.toUByte() }.toList()
@@ -117,30 +127,11 @@ class SolverStarter(
             .map { piece -> RotatedPieces.rotatedPieces(piece, allowBreaks = true) }
             .flatten()
 
-        val bottomSidePiecesRotated = sidesWithoutBreaks
-            .filter { it.rotatedPiece.rotations == 0.toByte() }
-            .groupBy { it.leftBottom }
-            .toMap()
-
-        val leftSidePiecesRotated = sidesWithoutBreaks
-            .filter { it.rotatedPiece.rotations == 1.toByte() }
-            .groupBy { it.leftBottom }
-            .toMap()
-
-        val rightSidePiecesWithBreaksRotated = sidesWithBreaks
-            .filter { it.rotatedPiece.rotations == 3.toByte() }
-            .groupBy { it.leftBottom }
-            .toMap()
-
-        val rightSidePiecesWithoutBreaksRotated = sidesWithoutBreaks
-            .filter { it.rotatedPiece.rotations == 3.toByte() }
-            .groupBy { it.leftBottom }
-            .toMap()
-
-        val topSidePiecesRotated = sidesWithBreaks
-            .filter { it.rotatedPiece.rotations == 2.toByte() }
-            .groupBy { it.leftBottom }
-            .toMap()
+        val bottomSidePiecesRotated = buildRotatedPiecesMap(sidesWithoutBreaks, 0)
+        val leftSidePiecesRotated = buildRotatedPiecesMap(sidesWithoutBreaks, 1)
+        val rightSidePiecesWithBreaksRotated = buildRotatedPiecesMap(sidesWithBreaks, 3)
+        val rightSidePiecesWithoutBreaksRotated = buildRotatedPiecesMap(sidesWithoutBreaks, 3)
+        val topSidePiecesRotated = buildRotatedPiecesMap(sidesWithBreaks, 2)
 
         val middlePiecesRotatedWithoutBreaks = middlePieces
             .map { piece -> RotatedPieces.rotatedPieces(piece) }
@@ -177,27 +168,16 @@ class SolverStarter(
 
         val rand = Random.Default
 
-        val corners: Array<Array<RotatedPiece>?> = Array(529) { null }
-        val leftSides: Array<Array<RotatedPiece>?> = Array(529) { null }
-        val topSides: Array<Array<RotatedPiece>?> = Array(529) { null }
-        val rightSidesWithBreaks: Array<Array<RotatedPiece>?> = Array(529) { null }
-        val rightSidesWithoutBreaks: Array<Array<RotatedPiece>?> = Array(529) { null }
-        val middlesWithBreak: Array<Array<RotatedPiece>?> = Array(529) { null }
-        val middlesNoBreak: Array<Array<RotatedPiece>?> = Array(529) { null }
-        val southStart: Array<Array<RotatedPiece>?> = Array(529) { null }
-        val westStart: Array<Array<RotatedPiece>?> = Array(529) { null }
-        val start: Array<Array<RotatedPiece>?> = Array(529) { null }
-
-        buildArray(cornerPiecesRotated, corners, rand)
-        buildArray(leftSidePiecesRotated, leftSides, rand)
-        buildArray(topSidePiecesRotated, topSides, rand)
-        buildArray(rightSidePiecesWithBreaksRotated, rightSidesWithBreaks, rand)
-        buildArray(rightSidePiecesWithoutBreaksRotated, rightSidesWithoutBreaks, rand)
-        buildArray(middlePiecesRotatedWithBreaks, middlesWithBreak, rand)
-        buildArray(middlePiecesRotatedWithoutBreaks, middlesNoBreak, rand)
-        buildArray(southStartPieceRotated, southStart, rand)
-        buildArray(westStartPieceRotated, westStart, rand)
-        buildArray(startPieceRotated, start, rand)
+        val corners = buildArray(cornerPiecesRotated, rand)
+        val leftSides = buildArray(leftSidePiecesRotated, rand)
+        val topSides = buildArray(topSidePiecesRotated, rand)
+        val rightSidesWithBreaks = buildArray(rightSidePiecesWithBreaksRotated, rand)
+        val rightSidesWithoutBreaks = buildArray(rightSidePiecesWithoutBreaksRotated, rand)
+        val middlesWithBreak = buildArray(middlePiecesRotatedWithBreaks, rand)
+        val middlesNoBreak = buildArray(middlePiecesRotatedWithoutBreaks, rand)
+        val southStart = buildArray(southStartPieceRotated, rand)
+        val westStart = buildArray(westStartPieceRotated, rand)
+        val start = buildArray(startPieceRotated, rand)
 
         val masterPieceLookup: Array<Array<Array<RotatedPiece>?>?> = Array(256) { null }
         val boardSearchSequence = BoardOrder.boardSearchSequence

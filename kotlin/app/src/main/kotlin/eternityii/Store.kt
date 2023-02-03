@@ -31,29 +31,34 @@ object Store {
                     }
                     val piece = foundPiece!!
 
-                    if (board[i * 16 + j].rotations == 0.toByte()) {
-                        url.append('a' + piece.topSide.toInt())
-                        url.append('a' + piece.rightSide.toInt())
-                        url.append('a' + piece.bottomSide.toInt())
-                        url.append('a' + piece.leftSide.toInt())
-                    }
-                    if (board[i * 16 + j].rotations == 1.toByte()) {
-                        url.append('a' + piece.leftSide.toInt())
-                        url.append('a' + piece.topSide.toInt())
-                        url.append('a' + piece.rightSide.toInt())
-                        url.append('a' + piece.bottomSide.toInt())
-                    }
-                    if (board[i * 16 + j].rotations == 2.toByte()) {
-                        url.append('a' + piece.bottomSide.toInt())
-                        url.append('a' + piece.leftSide.toInt())
-                        url.append('a' + piece.topSide.toInt())
-                        url.append('a' + piece.rightSide.toInt())
-                    }
-                    if (board[i * 16 + j].rotations == 3.toByte()) {
-                        url.append('a' + piece.rightSide.toInt())
-                        url.append('a' + piece.bottomSide.toInt())
-                        url.append('a' + piece.leftSide.toInt())
-                        url.append('a' + piece.topSide.toInt())
+                    when (board[i * 16 + j].rotations.toInt()) {
+                        0 -> {
+                            url.append('a' + piece.topSide.toInt())
+                            url.append('a' + piece.rightSide.toInt())
+                            url.append('a' + piece.bottomSide.toInt())
+                            url.append('a' + piece.leftSide.toInt())
+                        }
+
+                        1 -> {
+                            url.append('a' + piece.leftSide.toInt())
+                            url.append('a' + piece.topSide.toInt())
+                            url.append('a' + piece.rightSide.toInt())
+                            url.append('a' + piece.bottomSide.toInt())
+                        }
+
+                        2 -> {
+                            url.append('a' + piece.bottomSide.toInt())
+                            url.append('a' + piece.leftSide.toInt())
+                            url.append('a' + piece.topSide.toInt())
+                            url.append('a' + piece.rightSide.toInt())
+                        }
+
+                        3 -> {
+                            url.append('a' + piece.rightSide.toInt())
+                            url.append('a' + piece.bottomSide.toInt())
+                            url.append('a' + piece.leftSide.toInt())
+                            url.append('a' + piece.topSide.toInt())
+                        }
                     }
                 } else {
                     row.append("---/- ")
