@@ -166,7 +166,8 @@ fn solve_puzzle(data: &Data, data2: &Data2) -> SolverResult {
         if solve_index > max_solve_index {
             max_solve_index = solve_index;
 
-            if solve_index >= 252 {
+            // TODO reinstate if solve_index >= 252 {
+            if solve_index >= 20 {
                 save_board(&board.clone(), max_solve_index);
 
                 if solve_index >= 256 {
@@ -178,7 +179,8 @@ fn solve_puzzle(data: &Data, data2: &Data2) -> SolverResult {
             }
         }
 
-        if node_count > 50_000_000_000 {
+        // TODO reinstate if node_count > 50_000_000_000 {
+        if node_count > 50_000_000 {
             return SolverResult {
                 solve_indexes: solve_index_counts,
                 max_depth: max_solve_index,
@@ -279,21 +281,21 @@ struct Data2<'a> {
 }
 
 fn prepare_pieces_and_heuristics() -> Data {
-    let corner_pieces: Vec<Piece> = PIECES
-        .into_iter()
+    let corner_pieces: Vec<&Piece> = PIECES
+        .iter()
         .filter(|piece| piece.piece_type == 2)
         .collect();
-    let side_pieces: Vec<Piece> = PIECES
-        .into_iter()
+    let side_pieces: Vec<&Piece> = PIECES
+        .iter()
         .filter(|piece| piece.piece_type == 1)
         .collect();
     // Exclude start piece.
-    let middle_pieces: Vec<Piece> = PIECES
-        .into_iter()
+    let middle_pieces: Vec<&Piece> = PIECES
+        .iter()
         .filter(|piece| piece.piece_type == 0 && piece.piece_number != 139)
         .collect();
-    let start_piece: Vec<Piece> = PIECES
-        .into_iter()
+    let start_piece: Vec<&Piece> = PIECES
+        .iter()
         .filter(|piece| piece.piece_number == 139)
         .collect();
 
