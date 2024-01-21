@@ -36,11 +36,13 @@ fn main() {
     let mut total_index_count: u64 = 0;
     let mut loop_count: u64 = 0;
 
+    let empty_vec: Vec<Vec<RotatedPiece>> = vec![vec![]];
+
     loop {
         loop_count += 1;
 
         let data = prepare_pieces_and_heuristics();
-        let data2 = prepare_master_piece_lookup(&data);
+        let data2 = prepare_master_piece_lookup(&data, &empty_vec);
         println!("Solving with {num_virtual_cores} cores...");
 
         let index_counts: Arc<Mutex<HashMap<u32, u64>>> = Arc::new(Mutex::new(HashMap::new()));
@@ -100,8 +102,6 @@ fn main() {
         );
     }
 }
-
-const EMPTY_VEC: Vec<RotatedPiece> = vec![];
 
 fn solve_puzzle(data: &Data, data2: &Data2) -> SolverResult {
     let mut piece_used: [bool; 257] = [false; 257];
@@ -193,7 +193,6 @@ fn solve_puzzle(data: &Data, data2: &Data2) -> SolverResult {
             board[row * 16 + col].piece_number = 0;
         }
 
-        let empty_vec = EMPTY_VEC;
         let piece_candidates: &Vec<RotatedPiece> = if row != 0 {
             let left_side = if col == 0 {
                 0
@@ -201,11 +200,7 @@ fn solve_puzzle(data: &Data, data2: &Data2) -> SolverResult {
                 board[row * 16 + (col - 1)].right as usize
             };
             let x = data2.master_piece_lookup[row * 16 + col];
-            if let Some(x2) = x {
-                &x2[left_side * 23 + board[(row - 1) * 16 + col].top as usize]
-            } else {
-                &empty_vec
-            }
+            &x[left_side * 23 + board[(row - 1) * 16 + col].top as usize]
         } else if col < 15 {
             &bottom_sides[board[row * 16 + (col - 1)].right as usize * 23]
         } else {
@@ -280,7 +275,7 @@ struct Data {
 }
 
 struct Data2<'a> {
-    master_piece_lookup: [Option<&'a Vec<Vec<RotatedPiece>>>; 256],
+    master_piece_lookup: [&'a Vec<Vec<RotatedPiece>>; 256],
 }
 
 fn prepare_pieces_and_heuristics() -> Data {
@@ -462,9 +457,11 @@ fn prepare_pieces_and_heuristics() -> Data {
     }
 }
 
-fn prepare_master_piece_lookup(data: &Data) -> Data2 {
-    const ARRAY_REPEAT_VALUE: Option<&Vec<Vec<RotatedPiece>>> = None;
-    let mut master_piece_lookup: [Option<&Vec<Vec<RotatedPiece>>>; 256] = [ARRAY_REPEAT_VALUE; 256];
+fn prepare_master_piece_lookup<'a>(
+    data: &'a Data,
+    empty_vec: &'a Vec<Vec<RotatedPiece>>,
+) -> Data2<'a> {
+    let mut master_piece_lookup: [&Vec<Vec<RotatedPiece>>; 256] = [empty_vec; 256];
 
     for i in 0..256 {
         let row = data.board_search_sequence[i].row as usize;
@@ -473,50 +470,50 @@ fn prepare_master_piece_lookup(data: &Data) -> Data2 {
         master_piece_lookup[row * 16 + col] = match row {
             15 => {
                 if col == 15 || col == 0 {
-                    Some(&data.corners)
+                    &data.corners
                 } else {
-                    Some(&data.top_sides)
+                    &data.top_sides
                 }
             }
             0 => {
                 // Don't populate the master lookup table since we randomize every time.
-                None
+                empty_vec
             }
             _ => match col {
                 15 => {
                     if i < first_break_index() {
-                        Some(&data.right_sides_without_breaks)
+                        &data.right_sides_without_breaks
                     } else {
-                        Some(&data.right_sides_with_breaks)
+                        &data.right_sides_with_breaks
                     }
                 }
-                0 => Some(&data.left_sides),
+                0 => &data.left_sides,
                 _ => match row {
                     7 => match col {
-                        7 => Some(&data.start),
-                        6 => Some(&data.west_start),
+                        7 => &data.start,
+                        6 => &data.west_start,
                         _ => {
                             if i < first_break_index() {
-                                Some(&data.middles_no_break)
+                                &data.middles_no_break
                             } else {
-                                Some(&data.middles_with_break)
+                                &data.middles_with_break
                             }
                         }
                     },
                     6 => {
                         if col == 7 {
-                            Some(&data.south_start)
+                            &data.south_start
                         } else if i < first_break_index() {
-                            Some(&data.middles_no_break)
+                            &data.middles_no_break
                         } else {
-                            Some(&data.middles_with_break)
+                            &data.middles_with_break
                         }
                     }
                     _ => {
                         if i < first_break_index() {
-                            Some(&data.middles_no_break)
+                            &data.middles_no_break
                         } else {
-                            Some(&data.middles_with_break)
+                            &data.middles_with_break
                         }
                     }
                 },
