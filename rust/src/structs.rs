@@ -8,7 +8,7 @@ pub struct Piece {
     pub piece_type: u8, // 2 for corners, 1 for sides, and 0 for middles
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct RotatedPiece {
     pub piece_number: u16,
     pub rotations: u8,

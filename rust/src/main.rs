@@ -101,6 +101,8 @@ fn main() {
     }
 }
 
+const EMPTY_VEC: Vec<RotatedPiece> = vec![];
+
 fn solve_puzzle(data: &Data, data2: &Data2) -> SolverResult {
     let mut piece_used: [bool; 257] = [false; 257];
     let mut cumulative_heuristic_side_count: [u8; 256] = [0; 256];
@@ -191,7 +193,8 @@ fn solve_puzzle(data: &Data, data2: &Data2) -> SolverResult {
             board[row * 16 + col].piece_number = 0;
         }
 
-        let piece_candidates: Option<&Vec<RotatedPiece>> = if row != 0 {
+        let empty_vec = EMPTY_VEC;
+        let piece_candidates: &Vec<RotatedPiece> = if row != 0 {
             let left_side = if col == 0 {
                 0
             } else {
@@ -199,19 +202,19 @@ fn solve_puzzle(data: &Data, data2: &Data2) -> SolverResult {
             };
             let x = data2.master_piece_lookup[row * 16 + col];
             if let Some(x2) = x {
-                Some(&x2[left_side * 23 + board[(row - 1) * 16 + col].top as usize])
+                &x2[left_side * 23 + board[(row - 1) * 16 + col].top as usize]
             } else {
-                None
+                &empty_vec
             }
         } else if col < 15 {
-            Some(&bottom_sides[board[row * 16 + (col - 1)].right as usize * 23])
+            &bottom_sides[board[row * 16 + (col - 1)].right as usize * 23]
         } else {
-            Some(&data.corners[board[row * 16 + (col - 1)].right as usize * 23])
+            &data.corners[board[row * 16 + (col - 1)].right as usize * 23]
         };
 
         let mut found_piece = false;
 
-        if let Some(piece_candidates) = piece_candidates {
+        if !piece_candidates.is_empty() {
             let breaks_this_turn =
                 data.break_array[solve_index] - cumulative_breaks[solve_index - 1];
             let try_index = piece_index_to_try_next[solve_index] as usize;
