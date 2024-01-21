@@ -253,7 +253,8 @@ pub fn save_board(board: &[RotatedPiece; 256], max_solve_index: usize) {
             }
         }
 
-        entire_board.append(row.string().unwrap()) // TOO Was appendLine might need newline.
+        row.append("\n");
+        entire_board.append(row.string().unwrap())
     }
 
     entire_board.append("\n");
@@ -262,6 +263,7 @@ pub fn save_board(board: &[RotatedPiece; 256], max_solve_index: usize) {
     );
     entire_board.append(url.string().unwrap());
     entire_board.append("&motifs_order=jblackwood");
+    entire_board.append("\n");
     let board_string = entire_board.string().unwrap();
 
     let hash: Digest = md5::compute(board_string.clone());
