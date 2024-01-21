@@ -435,10 +435,10 @@ fn prepare_pieces_and_heuristics() -> Data {
         } else if i <= 102 {
             ((i as f64 - 76.0) * 0.6538f64 + 89.0) as u32
         } else if i <= MAX_HEURISTIC_INDEX {
-            ((i as f64 - 102.0) * 4.4615f64 + 106.0) as u32
+            ((i as f64 - 102.0) / 4.4615f64 + 106.0) as u32
         } else {
             0
-        }
+        };
     }
 
     Data {
