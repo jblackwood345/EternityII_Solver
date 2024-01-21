@@ -84,7 +84,9 @@ fn main() {
         let index_counts_clone = index_counts.clone();
         let index_counts_locked = index_counts_clone.lock().unwrap();
         for i in 0..=256 {
-            println!("{i} {}", index_counts_locked[&i].separate_with_commas());
+            if index_counts_locked[&i] != 0 {
+                println!("{i} {}", index_counts_locked[&i].separate_with_commas());
+            }
             total_index_count += index_counts_locked[&i];
         }
 
@@ -105,6 +107,7 @@ fn solve_puzzle(data: &Data, data2: &Data2) -> SolverResult {
     let mut piece_index_to_try_next: [u8; 256] = [0; 256];
     let mut cumulative_breaks: [u8; 256] = [0; 256];
     let mut solve_index_counts: [u64; 257] = [0; 257];
+    solve_index_counts[0] = 0; // Avoid warning when unused.
     let null_rotated_piece = RotatedPiece {
         piece_number: 0,
         rotations: 0,
