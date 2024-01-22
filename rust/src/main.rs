@@ -4,7 +4,6 @@ use crate::utils::{
     first_break_index, get_board_order, get_break_array, get_rotated_pieces, save_board,
 };
 use itertools::Itertools;
-use rand::rngs::ThreadRng;
 use rand::Rng;
 use rayon::prelude::*;
 use std::collections::HashMap;
@@ -167,7 +166,7 @@ fn solve_puzzle(data: &Data, data2: &Data2) -> SolverResult {
             max_solve_index = solve_index;
 
             // TODO reinstate if solve_index >= 252 {
-            if solve_index >= 20 {
+            if solve_index >= 36 {
                 save_board(&board.clone(), max_solve_index);
 
                 if solve_index >= 256 {
@@ -300,13 +299,7 @@ fn prepare_pieces_and_heuristics() -> Data {
         .collect();
 
     // Corners
-    let corner_pieces_rotated: HashMap<u16, Vec<RotatedPieceWithLeftBottom>> = corner_pieces
-        .iter()
-        .flat_map(|piece| get_rotated_pieces(piece, false))
-        .group_by(|piece| piece.left_bottom)
-        .into_iter()
-        .map(|(key, group)| (key, group.collect()))
-        .collect();
+    let corner_pieces_rotated = build_rotated_array2(&corner_pieces, |_piece| true, false);
 
     // Sides
     let sides_without_breaks: Vec<RotatedPieceWithLeftBottom> = side_pieces
@@ -318,88 +311,57 @@ fn prepare_pieces_and_heuristics() -> Data {
         .flat_map(|piece| get_rotated_pieces(piece, true))
         .collect();
 
-    let bottom_side_pieces_rotated = build_rotated_array(
-        &sides_without_breaks,
-        |piece: &RotatedPieceWithLeftBottom| -> bool { piece.rotated_piece.rotations == 0 },
-    );
-    let left_side_pieces_rotated = build_rotated_array(
-        &sides_without_breaks,
-        |piece: &RotatedPieceWithLeftBottom| -> bool { piece.rotated_piece.rotations == 1 },
-    );
-    let right_side_pieces_with_breaks_rotated = build_rotated_array(
-        &sides_with_breaks,
-        |piece: &RotatedPieceWithLeftBottom| -> bool { piece.rotated_piece.rotations == 3 },
-    );
-    let right_side_pieces_without_breaks_rotated = build_rotated_array(
-        &sides_without_breaks,
-        |piece: &RotatedPieceWithLeftBottom| -> bool { piece.rotated_piece.rotations == 3 },
-    );
-    let top_side_pieces_rotated = build_rotated_array(
-        &sides_with_breaks,
-        |piece: &RotatedPieceWithLeftBottom| -> bool { piece.rotated_piece.rotations == 2 },
-    );
+    let bottom_side_pieces_rotated = build_rotated_array(&sides_without_breaks, |piece| {
+        piece.rotated_piece.rotations == 0
+    });
+    let left_side_pieces_rotated = build_rotated_array(&sides_without_breaks, |piece| {
+        piece.rotated_piece.rotations == 1
+    });
+    let right_side_pieces_with_breaks_rotated = build_rotated_array(&sides_with_breaks, |piece| {
+        piece.rotated_piece.rotations == 3
+    });
+    let right_side_pieces_without_breaks_rotated =
+        build_rotated_array(&sides_without_breaks, |piece| {
+            piece.rotated_piece.rotations == 3
+        });
+    let top_side_pieces_rotated = build_rotated_array(&sides_with_breaks, |piece| {
+        piece.rotated_piece.rotations == 2
+    });
 
     // Middles
-    let middle_pieces_rotated_with_breaks: HashMap<_, Vec<_>> = middle_pieces
-        .clone()
-        .iter()
-        .flat_map(|piece| get_rotated_pieces(piece, true))
-        .group_by(|piece| piece.left_bottom)
-        .into_iter()
-        .map(|(key, group)| (key, group.collect()))
-        .collect();
-    let middle_pieces_rotated_without_breaks: HashMap<_, Vec<_>> = middle_pieces
-        .clone()
-        .iter()
-        .flat_map(|piece| get_rotated_pieces(piece, false))
-        .group_by(|piece| piece.left_bottom)
-        .into_iter()
-        .map(|(key, group)| (key, group.collect()))
-        .collect();
-    let south_start_piece_rotated: HashMap<_, Vec<_>> = middle_pieces
-        .iter()
-        .flat_map(|piece| get_rotated_pieces(piece, false))
-        .filter(|piece| piece.rotated_piece.top == 6)
-        .group_by(|piece| piece.left_bottom)
-        .into_iter()
-        .map(|(key, group)| (key, group.collect()))
-        .collect();
-    let west_start_piece_rotated: HashMap<_, Vec<_>> = middle_pieces
-        .clone()
-        .iter()
-        .flat_map(|piece| get_rotated_pieces(piece, false))
-        .filter(|piece| piece.rotated_piece.right == 11)
-        .group_by(|piece| piece.left_bottom)
-        .into_iter()
-        .map(|(key, group)| (key, group.collect()))
-        .collect();
-    let start_piece_rotated: HashMap<_, Vec<_>> = start_piece
-        .iter()
-        .flat_map(|piece| get_rotated_pieces(piece, false))
-        .filter(|piece| piece.rotated_piece.rotations == 2)
-        .group_by(|piece| piece.left_bottom)
-        .into_iter()
-        .map(|(key, group)| (key, group.collect()))
-        .collect();
+    let middle_pieces_rotated_with_breaks =
+        build_rotated_array2(&middle_pieces, |_piece| true, true);
+    let middle_pieces_rotated_without_breaks =
+        build_rotated_array2(&middle_pieces, |_piece| true, false);
+    let south_start_piece_rotated =
+        build_rotated_array2(&middle_pieces, |piece| piece.rotated_piece.top == 6, false);
+    let west_start_piece_rotated = build_rotated_array2(
+        &middle_pieces,
+        |piece| piece.rotated_piece.right == 11,
+        false,
+    );
+    let start_piece_rotated = build_rotated_array2(
+        &start_piece,
+        |piece| piece.rotated_piece.rotations == 2,
+        false,
+    );
 
-    let mut rng = rand::thread_rng();
-
-    let corners = build_array(&mut rng, &corner_pieces_rotated);
-    let left_sides = build_array(&mut rng, &left_side_pieces_rotated);
-    let top_sides = build_array(&mut rng, &top_side_pieces_rotated);
-    let right_sides_with_breaks = build_array(&mut rng, &right_side_pieces_with_breaks_rotated);
-    let right_sides_without_breaks =
-        build_array(&mut rng, &right_side_pieces_without_breaks_rotated);
-    let middles_with_break = build_array(&mut rng, &middle_pieces_rotated_with_breaks);
-    let middles_no_break = build_array(&mut rng, &middle_pieces_rotated_without_breaks);
-    let south_start = build_array(&mut rng, &south_start_piece_rotated);
-    let west_start = build_array(&mut rng, &west_start_piece_rotated);
-    let start = build_array(&mut rng, &start_piece_rotated);
+    let corners = build_array(&corner_pieces_rotated);
+    let left_sides = build_array(&left_side_pieces_rotated);
+    let top_sides = build_array(&top_side_pieces_rotated);
+    let right_sides_with_breaks = build_array(&right_side_pieces_with_breaks_rotated);
+    let right_sides_without_breaks = build_array(&right_side_pieces_without_breaks_rotated);
+    let middles_with_break = build_array(&middle_pieces_rotated_with_breaks);
+    let middles_no_break = build_array(&middle_pieces_rotated_without_breaks);
+    let south_start = build_array(&south_start_piece_rotated);
+    let west_start = build_array(&west_start_piece_rotated);
+    let start = build_array(&start_piece_rotated);
 
     let board_search_sequence = get_board_order();
     let break_array = get_break_array();
 
     let mut heuristic_array: [u32; 256] = [0; 256];
+    #[allow(clippy::needless_range_loop)]
     for i in 0..256 {
         heuristic_array[i] = if i <= 16 {
             0
@@ -505,11 +467,10 @@ fn prepare_master_piece_lookup<'a>(
     }
 }
 
-fn build_array(
-    rng: &mut ThreadRng,
-    input: &HashMap<u16, Vec<RotatedPieceWithLeftBottom>>,
-) -> Vec<Vec<RotatedPiece>> {
+fn build_array(input: &HashMap<u16, Vec<RotatedPieceWithLeftBottom>>) -> Vec<Vec<RotatedPiece>> {
+    let mut rng = rand::thread_rng();
     let mut output: Vec<Vec<RotatedPiece>> = vec![vec![]; 529];
+
     for (key, value) in input {
         let mut sorted_pieces = value.clone();
         sorted_pieces.sort_by(|a, b| {
@@ -527,6 +488,21 @@ fn build_rotated_array(
     input
         .clone()
         .into_iter()
+        .filter(f)
+        .group_by(|piece| piece.left_bottom)
+        .into_iter()
+        .map(|(key, group)| (key, group.collect()))
+        .collect()
+}
+
+fn build_rotated_array2(
+    input: &[&Piece],
+    f: fn(&RotatedPieceWithLeftBottom) -> bool,
+    allow_breaks: bool,
+) -> HashMap<u16, Vec<RotatedPieceWithLeftBottom>> {
+    input
+        .iter()
+        .flat_map(|piece| get_rotated_pieces(piece, allow_breaks))
         .filter(f)
         .group_by(|piece| piece.left_bottom)
         .into_iter()

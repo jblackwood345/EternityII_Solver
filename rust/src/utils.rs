@@ -294,6 +294,7 @@ pub fn first_break_index() -> usize {
     BREAK_INDEXES_ALLOWED[0] as usize
 }
 
+#[allow(clippy::needless_range_loop)]
 pub fn get_break_array() -> [u8; 256] {
     let mut cumulative_breaks_allowed = 0;
     let mut cumulative_break_array: [u8; 256] = [0; 256];
