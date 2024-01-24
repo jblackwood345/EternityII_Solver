@@ -195,7 +195,7 @@ pub fn get_rotated_pieces(piece: &Piece, allow_breaks: bool) -> Vec<RotatedPiece
     rotated_pieces
 }
 
-pub fn save_board(board: &[RotatedPiece; 256], max_solve_index: usize) {
+pub fn save_board(board: &[&RotatedPiece; 256], max_solve_index: usize) {
     let mut entire_board = Builder::default();
     let mut url = Builder::default();
 

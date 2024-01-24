@@ -117,7 +117,7 @@ fn solve_puzzle(data: &Data, data2: &Data2) -> SolverResult {
         break_count: 0,
         heuristic_side_count: 0,
     };
-    let mut board: [RotatedPiece; 256] = [null_rotated_piece; 256];
+    let mut board: [&RotatedPiece; 256] = [&null_rotated_piece; 256];
 
     let mut rng = rand::thread_rng();
 
@@ -144,7 +144,7 @@ fn solve_puzzle(data: &Data, data2: &Data2) -> SolverResult {
 
     if let Some(first_corner) = data.corners.first() {
         if let Some(piece) = first_corner.iter().min_by_key(|_| rng.gen_range(1..1000)) {
-            board[0] = *piece;
+            board[0] = piece;
         }
     }
 
@@ -167,7 +167,7 @@ fn solve_puzzle(data: &Data, data2: &Data2) -> SolverResult {
 
             // TODO reinstate if solve_index >= 252 {
             if solve_index >= 36 {
-                save_board(&board.clone(), max_solve_index);
+                save_board(&board, max_solve_index);
 
                 if solve_index >= 256 {
                     return SolverResult {
@@ -191,7 +191,7 @@ fn solve_puzzle(data: &Data, data2: &Data2) -> SolverResult {
 
         if board[row * 16 + col].piece_number > 0 {
             piece_used[board[row * 16 + col].piece_number as usize] = false;
-            board[row * 16 + col].piece_number = 0;
+            board[row * 16 + col] = &null_rotated_piece;
         }
 
         let piece_candidates: &Vec<RotatedPiece> = if row != 0 {
@@ -233,7 +233,7 @@ fn solve_puzzle(data: &Data, data2: &Data2) -> SolverResult {
 
                     found_piece = true;
 
-                    let piece = piece_candidates[i];
+                    let piece = &piece_candidates[i];
 
                     board[row * 16 + col] = piece;
                     piece_used[piece.piece_number as usize] = true;
