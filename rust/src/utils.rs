@@ -53,17 +53,18 @@ fn add_rotated_piece(
     }
 
     if ((rotations_breaks == 0) || ((rotations_breaks == 1) && allow_breaks)) && side_breaks == 0 {
+        let rotated_piece = RotatedPiece {
+            piece_number,
+            rotations,
+            top: piece_top,
+            right: piece_right,
+            break_count: rotations_breaks,
+            heuristic_side_count,
+        };
         rotated_pieces.push(RotatedPieceWithLeftBottom {
             left_bottom: calculate_two_sides(left, bottom),
             score: score - 100_000 * rotations_breaks as isize,
-            rotated_piece: RotatedPiece {
-                piece_number,
-                rotations,
-                top: piece_top,
-                right: piece_right,
-                break_count: rotations_breaks,
-                heuristic_side_count,
-            },
+            rotated_piece,
         });
     }
 }
