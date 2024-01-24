@@ -19,6 +19,55 @@ fn calculate_two_sides(side1: u8, side2: u8) -> u16 {
     side1 as u16 * 23 + side2 as u16
 }
 
+fn add_rotated_piece(
+    rotated_pieces: &mut Vec<RotatedPieceWithLeftBottom>,
+    left: u8,
+    bottom: u8,
+    piece_left: u8,
+    piece_bottom: u8,
+    allow_breaks: bool,
+    score: isize,
+    rotations: u8,
+    piece_number: u16,
+    piece_top: u8,
+    piece_right: u8,
+    heuristic_side_count: u8,
+) {
+    let mut rotations_breaks: u8 = 0;
+    let mut side_breaks: u8 = 0;
+
+    if piece_left != left {
+        rotations_breaks += 1;
+
+        if SIDE_EDGES.contains(&piece_left) {
+            side_breaks += 1;
+        }
+    }
+
+    if piece_bottom != bottom {
+        rotations_breaks += 1;
+
+        if SIDE_EDGES.contains(&piece_bottom) {
+            side_breaks += 1;
+        }
+    }
+
+    if ((rotations_breaks == 0) || ((rotations_breaks == 1) && allow_breaks)) && side_breaks == 0 {
+        rotated_pieces.push(RotatedPieceWithLeftBottom {
+            left_bottom: calculate_two_sides(left, bottom),
+            score: score - 100_000 * rotations_breaks as isize,
+            rotated_piece: RotatedPiece {
+                piece_number,
+                rotations,
+                top: piece_top,
+                right: piece_right,
+                break_count: rotations_breaks,
+                heuristic_side_count,
+            },
+        });
+    }
+}
+
 pub fn get_rotated_pieces(piece: &Piece, allow_breaks: bool) -> Vec<RotatedPieceWithLeftBottom> {
     let mut score: isize = 0;
     let mut heuristic_side_count: u8 = 0;
@@ -46,149 +95,62 @@ pub fn get_rotated_pieces(piece: &Piece, allow_breaks: bool) -> Vec<RotatedPiece
 
     for left in 0..=22 {
         for bottom in 0..=22 {
-            let mut rotations_breaks_0: u8 = 0;
-            let mut side_breaks_0: u8 = 0;
-
-            if piece.left != left {
-                rotations_breaks_0 += 1;
-
-                if SIDE_EDGES.contains(&piece.left) {
-                    side_breaks_0 += 1;
-                }
-            }
-
-            if piece.bottom != bottom {
-                rotations_breaks_0 += 1;
-
-                if SIDE_EDGES.contains(&piece.bottom) {
-                    side_breaks_0 += 1;
-                }
-            }
-
-            if ((rotations_breaks_0 == 0) || ((rotations_breaks_0 == 1) && allow_breaks))
-                && side_breaks_0 == 0
-            {
-                rotated_pieces.push(RotatedPieceWithLeftBottom {
-                    left_bottom: calculate_two_sides(left, bottom),
-                    score: score - 100_000 * rotations_breaks_0 as isize,
-                    rotated_piece: RotatedPiece {
-                        piece_number: piece.piece_number,
-                        rotations: 0,
-                        top: piece.top,
-                        right: piece.right,
-                        break_count: rotations_breaks_0,
-                        heuristic_side_count,
-                    },
-                });
-            }
-
-            let mut rotations_breaks_1: u8 = 0;
-            let mut side_breaks_1: u8 = 0;
-
-            if piece.bottom != left {
-                rotations_breaks_1 += 1;
-
-                if SIDE_EDGES.contains(&piece.bottom) {
-                    side_breaks_1 += 1;
-                }
-            }
-
-            if piece.right != bottom {
-                rotations_breaks_1 += 1;
-
-                if SIDE_EDGES.contains(&piece.right) {
-                    side_breaks_1 += 1;
-                }
-            }
-
-            if ((rotations_breaks_1 == 0) || ((rotations_breaks_1 == 1) && allow_breaks))
-                && side_breaks_1 == 0
-            {
-                rotated_pieces.push(RotatedPieceWithLeftBottom {
-                    left_bottom: calculate_two_sides(left, bottom),
-                    score: score - 100_000 * rotations_breaks_1 as isize,
-                    rotated_piece: RotatedPiece {
-                        piece_number: piece.piece_number,
-                        rotations: 1,
-                        top: piece.left,
-                        right: piece.top,
-                        break_count: rotations_breaks_1,
-                        heuristic_side_count,
-                    },
-                });
-            }
-
-            let mut rotations_breaks_2: u8 = 0;
-            let mut side_breaks_2: u8 = 0;
-
-            if piece.right != left {
-                rotations_breaks_2 += 1;
-
-                if SIDE_EDGES.contains(&piece.right) {
-                    side_breaks_2 += 1;
-                }
-            }
-
-            if piece.top != bottom {
-                rotations_breaks_2 += 1;
-
-                if SIDE_EDGES.contains(&piece.top) {
-                    side_breaks_2 += 1;
-                }
-            }
-
-            if ((rotations_breaks_2 == 0) || ((rotations_breaks_2 == 1) && allow_breaks))
-                && side_breaks_2 == 0
-            {
-                rotated_pieces.push(RotatedPieceWithLeftBottom {
-                    left_bottom: calculate_two_sides(left, bottom),
-                    score: score - 100_000 * rotations_breaks_2 as isize,
-                    rotated_piece: RotatedPiece {
-                        piece_number: piece.piece_number,
-                        rotations: 2,
-                        top: piece.bottom,
-                        right: piece.left,
-                        break_count: rotations_breaks_2,
-                        heuristic_side_count,
-                    },
-                });
-            }
-
-            let mut rotations_breaks_3: u8 = 0;
-            let mut side_breaks_3: u8 = 0;
-
-            if piece.top != left {
-                rotations_breaks_3 += 1;
-
-                if SIDE_EDGES.contains(&piece.top) {
-                    side_breaks_3 += 1;
-                }
-            }
-
-            if piece.left != bottom {
-                rotations_breaks_3 += 1;
-
-                if SIDE_EDGES.contains(&piece.left) {
-                    side_breaks_3 += 1;
-                }
-            }
-
-            if ((rotations_breaks_3 == 0) || ((rotations_breaks_3 == 1) && allow_breaks))
-                && side_breaks_3 == 0
-            {
-                rotated_pieces.push(RotatedPieceWithLeftBottom {
-                    left_bottom: calculate_two_sides(left, bottom),
-                    score: score - 100_000 * rotations_breaks_3 as isize,
-                    rotated_piece: RotatedPiece {
-                        piece_number: piece.piece_number,
-                        rotations: 3,
-                        top: piece.right,
-                        right: piece.bottom,
-                        break_count: rotations_breaks_3,
-                        heuristic_side_count,
-                    },
-                });
-            }
+            add_rotated_piece(
+                &mut rotated_pieces,
+                left,
+                bottom,
+                piece.left,
+                piece.bottom,
+                allow_breaks,
+                score,
+                0,
+                piece.piece_number,
+                piece.top,
+                piece.right,
+                heuristic_side_count,
+            );
+            add_rotated_piece(
+                &mut rotated_pieces,
+                left,
+                bottom,
+                piece.bottom,
+                piece.right,
+                allow_breaks,
+                score,
+                1,
+                piece.piece_number,
+                piece.left,
+                piece.top,
+                heuristic_side_count,
+            );
+            add_rotated_piece(
+                &mut rotated_pieces,
+                left,
+                bottom,
+                piece.right,
+                piece.top,
+                allow_breaks,
+                score,
+                2,
+                piece.piece_number,
+                piece.bottom,
+                piece.left,
+                heuristic_side_count,
+            );
+            add_rotated_piece(
+                &mut rotated_pieces,
+                left,
+                bottom,
+                piece.top,
+                piece.left,
+                allow_breaks,
+                score,
+                3,
+                piece.piece_number,
+                piece.right,
+                piece.bottom,
+                heuristic_side_count,
+            );
         }
     }
 
