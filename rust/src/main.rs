@@ -164,8 +164,7 @@ fn solve_puzzle(data: &Data, data2: &Data2) -> SolverResult {
         if solve_index > max_solve_index {
             max_solve_index = solve_index;
 
-            // TODO reinstate if solve_index >= 252 {
-            if solve_index >= 246 {
+            if solve_index >= 252 {
                 save_board(&board, max_solve_index);
 
                 if solve_index >= 256 {
@@ -177,8 +176,7 @@ fn solve_puzzle(data: &Data, data2: &Data2) -> SolverResult {
             }
         }
 
-        // TODO reinstate if node_count > 50_000_000_000 {
-        if node_count > 5_000_000_000 {
+        if node_count > 50_000_000_000 {
             return SolverResult {
                 solve_indexes: solve_index_counts,
                 max_depth: max_solve_index,
