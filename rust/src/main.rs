@@ -45,7 +45,8 @@ fn main() {
 
         let index_counts: Arc<Mutex<HashMap<u32, u64>>> = Arc::new(Mutex::new(HashMap::new()));
 
-        (0..num_virtual_cores).into_par_iter().for_each(|core| {
+        // This only num_virtual_cores-1 threads; we need to save one for the us.
+        (1..num_virtual_cores).into_par_iter().for_each(|core| {
             let max_depth = Arc::clone(&max_depth);
             let index_counts = Arc::clone(&index_counts);
 
