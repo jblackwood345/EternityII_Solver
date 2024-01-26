@@ -19,6 +19,7 @@ fn calculate_two_sides(side1: u8, side2: u8) -> u16 {
     side1 as u16 * 23 + side2 as u16
 }
 
+#[allow(clippy::too_many_arguments)]
 fn add_rotated_piece(
     rotated_pieces: &mut Vec<RotatedPieceWithLeftBottom>,
     left: u8,

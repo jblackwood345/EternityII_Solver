@@ -3,7 +3,6 @@ use crate::structs::{Piece, RotatedPiece, RotatedPieceWithLeftBottom, SearchInde
 use crate::utils::{
     first_break_index, get_board_order, get_break_array, get_rotated_pieces, save_board,
 };
-use itertools::Itertools;
 use rand::Rng;
 use rayon::prelude::*;
 use std::collections::HashMap;
@@ -160,13 +159,13 @@ fn solve_puzzle(data: &Data, data2: &Data2) -> SolverResult {
         node_count += 1;
 
         // Uncomment to get this info printed.
-        // solve_index_counts[solve_index] = solve_index_counts[solve_index] + 1;
+        // solve_index_counts[solve_index] += 1;
 
         if solve_index > max_solve_index {
             max_solve_index = solve_index;
 
             // TODO reinstate if solve_index >= 252 {
-            if solve_index >= 36 {
+            if solve_index >= 246 {
                 save_board(&board, max_solve_index);
 
                 if solve_index >= 256 {
@@ -179,7 +178,7 @@ fn solve_puzzle(data: &Data, data2: &Data2) -> SolverResult {
         }
 
         // TODO reinstate if node_count > 50_000_000_000 {
-        if node_count > 50_000_000 {
+        if node_count > 5_000_000_000 {
             return SolverResult {
                 solve_indexes: solve_index_counts,
                 max_depth: max_solve_index,
@@ -482,17 +481,18 @@ fn build_array(input: &HashMap<u16, Vec<RotatedPieceWithLeftBottom>>) -> Vec<Vec
 }
 
 fn build_rotated_array(
-    input: &Vec<RotatedPieceWithLeftBottom>,
-    f: fn(&RotatedPieceWithLeftBottom) -> bool,
+    input: &[RotatedPieceWithLeftBottom],
+    f: fn(&&RotatedPieceWithLeftBottom) -> bool,
 ) -> HashMap<u16, Vec<RotatedPieceWithLeftBottom>> {
-    input
-        .clone()
-        .into_iter()
-        .filter(f)
-        .group_by(|piece| piece.left_bottom)
-        .into_iter()
-        .map(|(key, group)| (key, group.collect()))
-        .collect()
+    let mut groups: HashMap<u16, Vec<RotatedPieceWithLeftBottom>> = HashMap::new();
+
+    for piece in input.iter().filter(f) {
+        groups
+            .entry(piece.left_bottom)
+            .or_default() // .or_insert_with(Vec::new)
+            .push(piece.clone());
+    }
+    groups
 }
 
 fn build_rotated_array2(
@@ -500,12 +500,17 @@ fn build_rotated_array2(
     f: fn(&RotatedPieceWithLeftBottom) -> bool,
     allow_breaks: bool,
 ) -> HashMap<u16, Vec<RotatedPieceWithLeftBottom>> {
-    input
+    let mut groups: HashMap<u16, Vec<RotatedPieceWithLeftBottom>> = HashMap::new();
+
+    for rotated_piece in input
         .iter()
         .flat_map(|piece| get_rotated_pieces(piece, allow_breaks))
         .filter(f)
-        .group_by(|piece| piece.left_bottom)
-        .into_iter()
-        .map(|(key, group)| (key, group.collect()))
-        .collect()
+    {
+        groups
+            .entry(rotated_piece.left_bottom)
+            .or_default() // .or_insert_with(Vec::new)
+            .push(rotated_piece);
+    }
+    groups
 }
