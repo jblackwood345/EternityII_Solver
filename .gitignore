@@ -349,8 +349,13 @@ MigrationBackup/
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
 
+.idea/
 .vscode/
+
 kotlin/.gradle
 kotlin/.idea
 kotlin/app/build
 kotlin/build
+
+rust/target
+rust/.idea
